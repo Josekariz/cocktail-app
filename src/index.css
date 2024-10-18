@@ -4,13 +4,25 @@
 
 @layer base {
   :root {
-    --background-dark: #1a1a1a;
-    --background-card: #2d2d2d;
-    --gold-primary: #B8860B;
-    --gold-light: #FFD700;
-    --red-accent: #8B0000;
-    --text-primary: #F5F5F5;
-    --text-secondary: #D3D3D3;
+    /* Darker background colors */
+    --background-dark: #0a0a0a;  /* Darker main background */
+    --background-card: #141414;  /* Darker card background */
+    
+    /* Enhanced gold palette */
+    --gold-primary: #DAA520;     /* Slightly brighter golden rod */
+    --gold-light: #FFD700;       /* Pure gold */
+    --gold-dark: #8B7355;        /* Darker gold for subtle accents */
+    
+    /* Richer accent colors */
+    --red-accent: #990000;       /* Deeper red */
+    
+    /* Enhanced text colors */
+    --text-primary: #FFFFFF;     /* Pure white for better contrast */
+    --text-secondary: #B8B8B8;   /* Slightly darker secondary text */
+    
+    /* New gradient colors */
+    --gradient-start: #B8860B;   /* Dark golden rod */
+    --gradient-end: #FFD700;     /* Gold */
   }
 
   body {
@@ -20,15 +32,17 @@
 
 @layer components {
   .glass-panel {
-    @apply bg-white/10 backdrop-blur-lg border border-white/20 rounded-xl;
+    @apply bg-white/5 backdrop-blur-lg border border-white/10 rounded-xl;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
   }
   
   .gold-gradient {
-    @apply bg-gradient-to-r from-[var(--gold-primary)] to-[var(--gold-light)];
+    @apply bg-gradient-to-r from-[var(--gradient-start)] to-[var(--gradient-end)];
   }
   
   .fancy-border {
     @apply border border-[var(--gold-primary)] rounded-xl;
+    box-shadow: 0 0 10px rgba(218, 165, 32, 0.1);
   }
 
   .hover-scale {
@@ -36,7 +50,21 @@
   }
 
   .card-shadow {
-    @apply shadow-lg shadow-black/20;
+    @apply shadow-xl;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+  }
+  
+  /* New luxury accents */
+  .gold-border {
+    @apply border border-[var(--gold-primary)]/30 rounded-xl;
+    box-shadow: 0 0 15px rgba(218, 165, 32, 0.05);
+  }
+  
+  .glass-card {
+    @apply bg-white/5 backdrop-blur-lg rounded-xl;
+    box-shadow: 
+      0 4px 20px rgba(0, 0, 0, 0.3),
+      inset 0 0 60px rgba(218, 165, 32, 0.05);
   }
 }
 
@@ -48,5 +76,24 @@
   
   .scrollbar-hide::-webkit-scrollbar {
     display: none;
+  }
+  
+  /* New gradient text utility */
+  .text-gold-gradient {
+    @apply text-transparent bg-clip-text bg-gradient-to-r from-[var(--gradient-start)] to-[var(--gradient-end)];
+  }
+  
+  /* Subtle gold glow effect */
+  .gold-glow {
+    text-shadow: 0 0 10px rgba(218, 165, 32, 0.3);
+  }
+  
+  /* Enhanced hover effects */
+  .hover-gold {
+    @apply transition-all duration-300;
+    &:hover {
+      @apply text-[var(--gold-light)];
+      text-shadow: 0 0 10px rgba(218, 165, 32, 0.3);
+    }
   }
 }

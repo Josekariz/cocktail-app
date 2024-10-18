@@ -116,13 +116,13 @@ const CocktailDetails = () => {
           </button>
         </div>
 
-        <div className="glass-panel">
+        <div className="glass-panel p-1">
           <div className="md:flex">
             <div className="md:w-1/2">
               <img
                 src={cocktail.strDrinkThumb}
                 alt={cocktail.strDrink}
-                className="w-full h-96 object-cover rounded-t-xl md:rounded-l-xl md:rounded-t-none"
+                className="w-full h-full object-cover rounded-t-xl md:rounded-l-xl md:rounded-t-xl"
               />
             </div>
 
