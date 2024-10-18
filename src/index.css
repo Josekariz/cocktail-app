@@ -1,0 +1,52 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background-dark: #1a1a1a;
+    --background-card: #2d2d2d;
+    --gold-primary: #B8860B;
+    --gold-light: #FFD700;
+    --red-accent: #8B0000;
+    --text-primary: #F5F5F5;
+    --text-secondary: #D3D3D3;
+  }
+
+  body {
+    @apply bg-[var(--background-dark)] text-[var(--text-primary)];
+  }
+}
+
+@layer components {
+  .glass-panel {
+    @apply bg-white/10 backdrop-blur-lg border border-white/20 rounded-xl;
+  }
+  
+  .gold-gradient {
+    @apply bg-gradient-to-r from-[var(--gold-primary)] to-[var(--gold-light)];
+  }
+  
+  .fancy-border {
+    @apply border border-[var(--gold-primary)] rounded-xl;
+  }
+
+  .hover-scale {
+    @apply transition-transform duration-300 hover:scale-105;
+  }
+
+  .card-shadow {
+    @apply shadow-lg shadow-black/20;
+  }
+}
+
+@layer utilities {
+  .scrollbar-hide {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+}
