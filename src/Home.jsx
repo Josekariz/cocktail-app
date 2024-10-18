@@ -6,7 +6,7 @@ const Home = () => {
   const navigate = useNavigate();
   const [cocktails, setCocktails] = useState([]);
   const [search, setSearch] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   const [filters, setFilters] = useState({
@@ -70,8 +70,8 @@ const Home = () => {
           filters.glass
         )}`;
       } else {
-        // Default search if no filters are applied
-        url = "https://thecocktaildb.com/api/json/v1/1/search.php?s=";
+        // Modified default search to ensure we get some initial results
+        url = "https://thecocktaildb.com/api/json/v1/1/search.php?f=a";
       }
 
       const response = await fetch(url);
@@ -81,10 +81,12 @@ const Home = () => {
       }
 
       const data = await response.json();
-      setCocktails(data.drinks || []);
-
+      
       if (!data.drinks) {
+        setCocktails([]);
         setError("No cocktails found");
+      } else {
+        setCocktails(data.drinks);
       }
     } catch (error) {
       console.error("Error fetching cocktails:", error);
@@ -95,14 +97,15 @@ const Home = () => {
     }
   }, [search, filters]);
 
+  // Modified to ensure initial load
   useEffect(() => {
     getCocktails();
   }, [getCocktails]);
 
-  // Handle search input
+  // Rest of the component remains the same...
+  
   const updateSearch = (e) => setSearch(e.target.value);
 
-  // Handle filter changes
   const handleFilterChange = (type, value) => {
     setFilters((prev) => ({
       ...prev,
@@ -111,28 +114,33 @@ const Home = () => {
     setSearch("");
   };
 
-  // Fetch cocktail of the day
   const fetchCocktailOfDay = async () => {
-    const today = new Date().toDateString();
-    const storedCocktail = localStorage.getItem("cocktailOfDay");
-    const storedDate = localStorage.getItem("cocktailOfDayDate");
+    try {
+      const today = new Date().toDateString();
+      const storedCocktail = localStorage.getItem("cocktailOfDay");
+      const storedDate = localStorage.getItem("cocktailOfDayDate");
 
-    if (storedCocktail && storedDate === today) {
-      setCocktailOfDay(JSON.parse(storedCocktail));
-    } else {
-      try {
+      if (storedCocktail && storedDate === today) {
+        setCocktailOfDay(JSON.parse(storedCocktail));
+      } else {
         const response = await fetch(
           "https://www.thecocktaildb.com/api/json/v1/1/random.php"
         );
-        const data = await response.json();
-        const newCocktailOfDay = data.drinks[0];
+        
+        if (!response.ok) {
+          throw new Error("Failed to fetch cocktail of the day");
+        }
 
-        setCocktailOfDay(newCocktailOfDay);
-        localStorage.setItem("cocktailOfDay", JSON.stringify(newCocktailOfDay));
-        localStorage.setItem("cocktailOfDayDate", today);
-      } catch (error) {
-        console.error("Error fetching cocktail of the day:", error);
+        const data = await response.json();
+        if (data.drinks && data.drinks[0]) {
+          const newCocktailOfDay = data.drinks[0];
+          setCocktailOfDay(newCocktailOfDay);
+          localStorage.setItem("cocktailOfDay", JSON.stringify(newCocktailOfDay));
+          localStorage.setItem("cocktailOfDayDate", today);
+        }
       }
+    } catch (error) {
+      console.error("Error fetching cocktail of the day:", error);
     }
   };
 
@@ -140,13 +148,18 @@ const Home = () => {
     fetchCocktailOfDay();
   }, []);
 
-  // Random cocktail navigation
   const fetchRandomCocktailAndNavigate = async () => {
-    const response = await fetch(
-      "https://www.thecocktaildb.com/api/json/v1/1/random.php"
-    );
-    const data = await response.json();
-    navigate(`/cocktail/${data.drinks[0].idDrink}`);
+    try {
+      const response = await fetch(
+        "https://www.thecocktaildb.com/api/json/v1/1/random.php"
+      );
+      const data = await response.json();
+      if (data.drinks && data.drinks[0]) {
+        navigate(`/cocktail/${data.drinks[0].idDrink}`);
+      }
+    } catch (error) {
+      console.error("Error fetching random cocktail:", error);
+    }
   };
 
   return (
@@ -185,7 +198,7 @@ const Home = () => {
                 className="px-4 py-2 bg-[var(--background-card)] border border-[var(--gold-primary)] rounded-lg focus:ring-2 focus:ring-[var(--gold-light)]"
               >
                 <option value="">All Categories</option>
-                {categories.map((category) => (
+                {Array.isArray(categories) && categories.map((category) => (
                   <option
                     key={category.strCategory}
                     value={category.strCategory}
@@ -201,7 +214,7 @@ const Home = () => {
                 className="px-4 py-2 bg-[var(--background-card)] border border-[var(--gold-primary)] rounded-lg focus:ring-2 focus:ring-[var(--gold-light)]"
               >
                 <option value="">All Glasses</option>
-                {glassTypes.map((glass) => (
+                {Array.isArray(glassTypes) && glassTypes.map((glass) => (
                   <option key={glass.strGlass} value={glass.strGlass}>
                     {glass.strGlass}
                   </option>
@@ -230,11 +243,14 @@ const Home = () => {
             {error}
           </div>
         )}
+        
         {cocktailOfDay && (
           <div className="mb-12">
             <div className="flex items-center gap-2 mb-6">
               <Calendar size={24} className="text-[var(--gold-primary)]" />
-              <h2 className="text-2xl font-bold">Cocktail of the Day</h2>
+              <h2 className="text-2xl font-bold text-[var(--text-primary)]">
+                Cocktail of the Day
+              </h2>
             </div>
             <Link to={`/cocktail/${cocktailOfDay.idDrink}`}>
               <div className="glass-panel hover-scale card-shadow">
@@ -247,16 +263,20 @@ const Home = () => {
                     />
                   </div>
                   <div className="md:w-1/2 p-8">
-                    <h3 className="text-3xl font-bold mb-4">
+                    <h3 className="text-3xl font-bold mb-4 text-[var(--text-primary)]">
                       {cocktailOfDay.strDrink}
                     </h3>
                     <div className="flex gap-2 mb-4">
-                      <span className="px-3 py-1 rounded-full text-sm bg-[var(--gold-primary)] text-black">
-                        {cocktailOfDay.strCategory}
-                      </span>
-                      <span className="px-3 py-1 rounded-full text-sm bg-[var(--red-accent)] text-white">
-                        {cocktailOfDay.strAlcoholic}
-                      </span>
+                      {cocktailOfDay.strCategory && (
+                        <span className="px-3 py-1 rounded-full text-sm bg-[var(--gold-primary)] text-black">
+                          {cocktailOfDay.strCategory}
+                        </span>
+                      )}
+                      {cocktailOfDay.strAlcoholic && (
+                        <span className="px-3 py-1 rounded-full text-sm bg-[var(--red-accent)] text-white">
+                          {cocktailOfDay.strAlcoholic}
+                        </span>
+                      )}
                     </div>
                     <p className="text-[var(--text-secondary)] line-clamp-4 mb-4">
                       {cocktailOfDay.strInstructions}
@@ -273,11 +293,10 @@ const Home = () => {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
           {loading ? (
-            // Loading skeletons
             [...Array(6)].map((_, i) => (
               <div key={i} className="animate-pulse glass-panel h-96"></div>
             ))
-          ) : cocktails && cocktails.length > 0 ? (
+          ) : Array.isArray(cocktails) && cocktails.length > 0 ? (
             cocktails.map((cocktail) => (
               <Link to={`/cocktail/${cocktail.idDrink}`} key={cocktail.idDrink}>
                 <div className="glass-panel hover-scale card-shadow h-full">
@@ -289,7 +308,7 @@ const Home = () => {
                     />
                   </div>
                   <div className="p-6">
-                    <h2 className="font-bold text-xl mb-2">
+                    <h2 className="font-bold text-xl mb-2 text-[var(--text-primary)]">
                       {cocktail.strDrink}
                     </h2>
                     <div className="flex gap-2 flex-wrap">
@@ -309,7 +328,7 @@ const Home = () => {
               </Link>
             ))
           ) : (
-            <div className="col-span-full text-center text-gray-500">
+            <div className="col-span-full text-center text-[var(--text-secondary)]">
               {error || "No cocktails found"}
             </div>
           )}
