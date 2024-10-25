@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { ArrowLeft, Wine } from "lucide-react";
 
 const CocktailDetails = () => {
   const { cocktailId } = useParams();
+  const navigate = useNavigate();
   const [cocktail, setCocktail] = useState(null);
   const [ingredients, setIngredients] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -56,6 +57,10 @@ const CocktailDetails = () => {
     }
   };
 
+  const handleBack = () => {
+    navigate(-1); 
+  };
+
   const fetchRandomCocktail = async () => {
     try {
       const response = await fetch(
@@ -64,7 +69,8 @@ const CocktailDetails = () => {
       const data = await response.json();
       const randomCocktail = data.drinks[0];
       setCocktail(randomCocktail);
-      window.history.pushState(null, "", `/cocktail/${randomCocktail.idDrink}`);
+      // Update URL while preserving the navigation stack
+      navigate(`/cocktail/${randomCocktail.idDrink}`, { replace: true });
     } catch (err) {
       setError("Failed to fetch random cocktail");
     }
@@ -83,12 +89,12 @@ const CocktailDetails = () => {
       <div className="min-h-screen flex items-center justify-center bg-[var(--background-dark)]">
         <div className="text-red-500 text-center">
           <p className="text-xl mb-4">{error}</p>
-          <Link
-            to="/"
+          <button
+            onClick={handleBack}
             className="text-[var(--gold-primary)] hover:text-[var(--gold-light)]"
           >
             Return to Home
-          </Link>
+          </button>
         </div>
       </div>
     );
@@ -100,13 +106,15 @@ const CocktailDetails = () => {
     <div className="min-h-screen bg-[var(--background-dark)]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="flex justify-between items-center mb-8">
-          <Link
-            to="/"
-            className="inline-flex items-center gap-2 text-[var(--text-primary)] hover:text-[var(--gold-primary)]"
+          <button
+            onClick={handleBack}
+            className="inline-flex items-center gap-2 px-4 py-2 hover:bg-[rgba(255,215,0,0.8)] text-white bg-[rgba(255,255,255,0.5)] rounded-lg shadow-lg transition-all duration-300 ease-in-out transform hover:scale-105"
           >
             <ArrowLeft size={20} />
             Back to Cocktails
-          </Link>
+          </button>
+
+
           <button
             onClick={fetchRandomCocktail}
             className="flex items-center gap-2 gold-gradient text-black px-4 py-2 rounded-lg hover:opacity-90 transition-all"

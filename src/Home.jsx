@@ -1,23 +1,37 @@
 import React, { useEffect, useState, useCallback } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { Search, Wine, Calendar } from "lucide-react";
 
 const Home = () => {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [cocktails, setCocktails] = useState([]);
-  const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  // Initialize filters from URL params
   const [filters, setFilters] = useState({
-    alcoholic: "",
-    glass: "",
-    category: "",
+    alcoholic: searchParams.get("alcoholic") || "",
+    glass: searchParams.get("glass") || "",
+    category: searchParams.get("category") || "",
   });
 
+  const [search, setSearch] = useState(searchParams.get("search") || "");
   const [glassTypes, setGlassTypes] = useState([]);
   const [categories, setCategories] = useState([]);
   const [cocktailOfDay, setCocktailOfDay] = useState(null);
+
+  // Update URL when filters change
+  const updateURLParams = useCallback((newFilters, newSearch) => {
+    const params = new URLSearchParams();
+
+    if (newSearch) params.set("search", newSearch);
+    if (newFilters.category) params.set("category", newFilters.category);
+    if (newFilters.glass) params.set("glass", newFilters.glass);
+    if (newFilters.alcoholic) params.set("alcoholic", newFilters.alcoholic);
+
+    setSearchParams(params);
+  }, [setSearchParams]);
 
   // Fetch filter options on mount
   useEffect(() => {
@@ -46,7 +60,7 @@ const Home = () => {
     fetchFilterOptions();
   }, []);
 
-  // Search cocktails based on filters
+  // Modified search function
   const getCocktails = useCallback(async () => {
     setLoading(true);
     setError(null);
@@ -54,23 +68,14 @@ const Home = () => {
       let url;
 
       if (search) {
-        url = `https://thecocktaildb.com/api/json/v1/1/search.php?s=${encodeURIComponent(
-          search
-        )}`;
+        url = `https://thecocktaildb.com/api/json/v1/1/search.php?s=${encodeURIComponent(search)}`;
       } else if (filters.alcoholic) {
-        url = `https://thecocktaildb.com/api/json/v1/1/filter.php?a=${encodeURIComponent(
-          filters.alcoholic
-        )}`;
+        url = `https://thecocktaildb.com/api/json/v1/1/filter.php?a=${encodeURIComponent(filters.alcoholic)}`;
       } else if (filters.category) {
-        url = `https://thecocktaildb.com/api/json/v1/1/filter.php?c=${encodeURIComponent(
-          filters.category
-        )}`;
+        url = `https://thecocktaildb.com/api/json/v1/1/filter.php?c=${encodeURIComponent(filters.category)}`;
       } else if (filters.glass) {
-        url = `https://thecocktaildb.com/api/json/v1/1/filter.php?g=${encodeURIComponent(
-          filters.glass
-        )}`;
+        url = `https://thecocktaildb.com/api/json/v1/1/filter.php?g=${encodeURIComponent(filters.glass)}`;
       } else {
-        // Modified default search to ensure we get some initial results
         url = "https://thecocktaildb.com/api/json/v1/1/search.php?f=a";
       }
 
@@ -81,7 +86,7 @@ const Home = () => {
       }
 
       const data = await response.json();
-      
+
       if (!data.drinks) {
         setCocktails([]);
         setError("No cocktails found");
@@ -97,21 +102,32 @@ const Home = () => {
     }
   }, [search, filters]);
 
-  // Modified to ensure initial load
   useEffect(() => {
     getCocktails();
   }, [getCocktails]);
 
-  // Rest of the component remains the same...
-  
-  const updateSearch = (e) => setSearch(e.target.value);
+  // Modified update handlers to maintain URL state
+  const updateSearch = (e) => {
+    const newSearch = e.target.value;
+    setSearch(newSearch);
+    const newFilters = { ...filters, alcoholic: "", glass: "", category: "" };
+    setFilters(newFilters);
+    updateURLParams(newFilters, newSearch);
+  };
 
   const handleFilterChange = (type, value) => {
-    setFilters((prev) => ({
-      ...prev,
-      [type]: value,
-    }));
-    setSearch("");
+    let newFilters = {
+      alcoholic: "",
+      glass: "",
+      category: ""
+    };
+
+    // Set the selected filter, reset others
+    newFilters[type] = value;
+
+    setFilters(newFilters);
+    setSearch("");  // Clear search when filtering
+    updateURLParams(newFilters, "");  // Update URL with new filters
   };
 
   const fetchCocktailOfDay = async () => {
