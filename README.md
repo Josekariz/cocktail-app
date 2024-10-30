@@ -2,6 +2,9 @@
 
 Welcome to **Cocktail Explorer**! 🌟 A web app designed for cocktail lovers, allowing you to search, explore, and discover new cocktails! 🍸 Whether you're into fancy alcoholic beverages or prefer something non-alcoholic, we've got you covered! 🧃
 
+![image](https://github.com/user-attachments/assets/c590c0a1-094e-4302-a362-db838d3ae282)
+
+
 ## 🎯 Features
 
 - **Search Cocktails** 🔍: Easily find your favorite cocktails by name!
